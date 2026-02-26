@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
 using System.IO;
@@ -361,47 +361,46 @@ public partial class MainWindow : Window
     }
 
     // --- ЗАПИСЬ ---
-    public void StartRecordingProcess()
+  public void StartRecordingProcess()
+{
+    try
     {
-        try
+        if (_currentMode == RecordingMode.AnalyzeContext)
         {
-            PlayUiSound(SoundType.Start);
-
-            if (_currentMode == RecordingMode.AnalyzeContext)
-            {
-                try { Clipboard.Clear(); } catch { }
-                MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(100, 100, 255)); // Синий
-            }
-            else
-            {
-                MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(255, 100, 100)); // Красный
-            }
-
-            lblStatus.Opacity = 0;
-            HistogramPanel.Visibility = Visibility.Visible;
-            _animationTimer.Start();
-
-            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyRecordings");
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-            _currentFileName = Path.Combine(folder, "temp_audio.wav");
-
-            _waveIn = new WaveInEvent();
-            if (_selectedDeviceNumber < WaveIn.DeviceCount) _waveIn.DeviceNumber = _selectedDeviceNumber;
-            else _selectedDeviceNumber = 0;
-
-            _waveIn.WaveFormat = new WaveFormat(16000, 1);
-            _writer = new WaveFileWriter(_currentFileName, _waveIn.WaveFormat);
-            _waveIn.DataAvailable += (_, a) => _writer.Write(a.Buffer, 0, a.BytesRecorded);
-            _waveIn.StartRecording();
+            try { Clipboard.Clear(); } catch { }
+            MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(100, 100, 255));
         }
-        catch (Exception ex)
+        else
         {
-            _isRecording = false;
-            MessageBox.Show("Mic Error: " + ex.Message);
+            MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(255, 100, 100));
         }
+
+        lblStatus.Opacity = 0;
+        HistogramPanel.Visibility = Visibility.Visible;
+        _animationTimer.Start();
+
+        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyRecordings");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+        _currentFileName = Path.Combine(folder, "temp_audio.wav");
+
+        _waveIn = new WaveInEvent();
+        if (_selectedDeviceNumber < WaveIn.DeviceCount) _waveIn.DeviceNumber = _selectedDeviceNumber;
+        else _selectedDeviceNumber = 0;
+
+        _waveIn.WaveFormat = new WaveFormat(16000, 1);
+        _writer = new WaveFileWriter(_currentFileName, _waveIn.WaveFormat);
+        _waveIn.DataAvailable += (_, a) => _writer.Write(a.Buffer, 0, a.BytesRecorded);
+        _waveIn.StartRecording();
+
+        PlayUiSound(SoundType.Start);
     }
-
+    catch (Exception ex)
+    {
+        _isRecording = false;
+        MessageBox.Show("Mic Error: " + ex.Message);
+    }
+}
     private void AnimationTimer_Tick(object sender, EventArgs e)
     {
         AnimateBar(Bar1); AnimateBar(Bar2); AnimateBar(Bar3); AnimateBar(Bar4); AnimateBar(Bar5);
